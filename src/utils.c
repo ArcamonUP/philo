@@ -6,13 +6,14 @@
 /*   By: kbaridon <kbaridon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/07 11:50:41 by kbaridon          #+#    #+#             */
-/*   Updated: 2025/01/13 15:12:39 by kbaridon         ###   ########.fr       */
+/*   Updated: 2025/01/17 11:07:44 by kbaridon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 
 int	ft_atoi(const char *str)
 {
@@ -40,49 +41,62 @@ int	ft_atoi(const char *str)
 	return (result * nb);
 }
 
-int	ft_strncmp(const char *s1, const char *s2, unsigned int n)
+t_thread	*cp_data(t_philo *data, int i)
 {
-	unsigned int	i;
+	t_thread	*result;
 
-	i = 0;
-	while (s1[i] && s2[i] && s1[i] == s2[i] && i < n - 1)
-		i++;
-	if (i < n)
-		return ((unsigned char)s1[i] - (unsigned char)s2[i]);
+	result = (t_thread *)malloc(sizeof(t_thread));
+	if (!result)
+		return (NULL);
+	result->data = data;
+	result->num = i + 1;
+	return (result);
+}
+
+int	is_out_of_time(t_thread thread, struct timeval tv)
+{
+	struct timeval	tv2;
+
+	gettimeofday(&tv2, NULL);
+	if (thread.data->time_die < (tv2.tv_usec - tv.tv_usec))
+		return (1);
 	return (0);
 }
 
-int	print_move(t_philo *data, char *str)
+
+void	ft_bzero(void *s, size_t n)
 {
-	struct timeval	tv;
+	unsigned char	*ptr;
 
-	gettimeofday(&tv, NULL);
-	printf("%ld: %d %s\n", tv.tv_usec - data->tv.tv_usec, data->num, str);
-	if (ft_strncmp(str, "died", 4) == 0)
-		return (0);
-	return (1);
-}
-
-void	free_thread(pthread_t *tid, int num)
-{
-	int	i;
-
-	i = 0;
-	while (i < num)
+	ptr = (unsigned char *)s;
+	while (n > 0)
 	{
-		pthread_detach(tid[i]);
-		i++;
+		*ptr = '\0';
+		ptr++;
+		n--;
 	}
-	free(tid);
 }
 
-t_philo	*copy_data(t_philo data)
+void	*ft_calloc(size_t nmemb, size_t size)
 {
-	t_philo	*result;
+	void			*result;
+	unsigned char	*ptr;
+	int				n;
 
-	result = (t_philo *)malloc(sizeof(t_philo));
-	if (!result)
+	if (nmemb == 0 || size == 0)
+		return (malloc(0));
+	if (nmemb >= (SIZE_MAX / size))
 		return (NULL);
-	(*result) = data;
+	result = malloc(nmemb * size);
+	if (result == NULL)
+		return (NULL);
+	ptr = (unsigned char *)result;
+	n = nmemb * size;
+	while (n > 0)
+	{
+		*ptr = '\0';
+		ptr++;
+		n--;
+	}
 	return (result);
 }

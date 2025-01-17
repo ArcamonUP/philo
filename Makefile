@@ -6,7 +6,7 @@
 #    By: kbaridon <kbaridon@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/01/07 11:00:38 by kbaridon          #+#    #+#              #
-#    Updated: 2025/01/13 14:52:19 by kbaridon         ###   ########.fr        #
+#    Updated: 2025/01/15 14:09:25 by kbaridon         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,7 +18,9 @@ HEADERS = $(SRCDIR)/philo.h
 
 SRC =	philo.c \
 		init.c	\
-		utils.c
+		moves.c \
+		utils.c \
+		free.c
 
 OBJS = $(addprefix $(SRCDIR)/, $(SRC:.c=.o))
 
