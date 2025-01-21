@@ -6,7 +6,7 @@
 /*   By: kbaridon <kbaridon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/07 11:06:08 by kbaridon          #+#    #+#             */
-/*   Updated: 2025/01/17 11:55:04 by kbaridon         ###   ########.fr       */
+/*   Updated: 2025/01/21 17:29:15 by kbaridon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,35 +23,17 @@ void	*philo(void *arg)
 	if (!arg)
 		return (NULL);
 	thread = arg;
-	while (thread->data->alive == 2)
-	{
-		if (thread->num == thread->data->num_total)
-			(gettimeofday(&thread->data->tv, NULL), thread->data->alive = 1);
-	}
+	synchronize(thread);
 	tv = thread->data->tv;
 	while (1)
 	{
-		if (philo_took_fork(*thread, thread->num - 1, tv))
+		if (philo_took_fork(*thread, tv))
 			return (free(arg), NULL);
 		if (philo_eat(*thread, tv))
 			return (free(arg), NULL);
 		gettimeofday(&tv, NULL);
 		if (philo_sleep(*thread, tv))
 			return (free(arg), NULL);
-		if (philo_think(*thread, tv))
-			return (free(arg), NULL);
-	}
-}
-
-void	join_thread(pthread_t *tid)
-{
-	int	i;
-
-	i = 0;
-	while (tid[i])
-	{
-		pthread_join(tid[i], NULL);
-		i++;
 	}
 }
 
@@ -61,6 +43,13 @@ int	main(int ac, char **av)
 	t_philo			data;
 	int				i;
 
+	//Faire tests de -1 a 10.
+	//il faut parser tout : pas de char, bon nombres d'args. Il peut y en avoir 6
+	// nb_eat : pas pris en compte pr l'instant
+	//check si les pthread_create/init/mutex/gettime fail a chaque fois : ils peuvent fail
+	//philo 4 410 200 200 : Doit fonctionner sans morts : pas le cas actuellement
+	//Temps pour detacter la mort un peu trop long : a fix aussi
+	//Regler le pb dans le main ci-dessous.
 	tid = init(ac, av, &data);
 	if (!tid)
 		return (1);
@@ -74,8 +63,13 @@ int	main(int ac, char **av)
 		}
 		i++;
 	}
-	join_thread(tid);
-	free_thread(tid, data.num_total);
-	free_mutex(data);
-	return (0);
+	pthread_mutex_lock(data.alive.mutex);
+	data.alive.value = 1;
+	gettimeofday(&data.tv, NULL);
+	//check ici constamment si un truc est mort : faire le join que apres ca
+	pthread_mutex_unlock(data.alive.mutex);
+	i = 0;
+	while (tid[i])
+		pthread_join(tid[i++], NULL);
+	return (free(tid), free_mutex(data), 0);
 }

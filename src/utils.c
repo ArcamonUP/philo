@@ -6,7 +6,7 @@
 /*   By: kbaridon <kbaridon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/07 11:50:41 by kbaridon          #+#    #+#             */
-/*   Updated: 2025/01/17 11:07:44 by kbaridon         ###   ########.fr       */
+/*   Updated: 2025/01/21 16:09:21 by kbaridon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <unistd.h>
 
 int	ft_atoi(const char *str)
 {
@@ -41,40 +42,29 @@ int	ft_atoi(const char *str)
 	return (result * nb);
 }
 
-t_thread	*cp_data(t_philo *data, int i)
-{
-	t_thread	*result;
-
-	result = (t_thread *)malloc(sizeof(t_thread));
-	if (!result)
-		return (NULL);
-	result->data = data;
-	result->num = i + 1;
-	return (result);
-}
-
 int	is_out_of_time(t_thread thread, struct timeval tv)
 {
 	struct timeval	tv2;
+	long long int	time;
 
+	pthread_mutex_lock(thread.data->alive.mutex);
 	gettimeofday(&tv2, NULL);
-	if (thread.data->time_die < (tv2.tv_usec - tv.tv_usec))
-		return (1);
-	return (0);
-}
-
-
-void	ft_bzero(void *s, size_t n)
-{
-	unsigned char	*ptr;
-
-	ptr = (unsigned char *)s;
-	while (n > 0)
+	time = (tv2.tv_sec - tv.tv_sec) * 1000;
+	time += (tv2.tv_usec - tv.tv_usec) / 1000;
+	if (!thread.data->alive.value || thread.data->time_die < time)
 	{
-		*ptr = '\0';
-		ptr++;
-		n--;
+		if (thread.data->alive.value)
+		{
+			thread.data->alive.value = 0;
+			print_move(thread, "died");
+		}
+		else
+			pthread_mutex_unlock(thread.data->writing);
+		pthread_mutex_unlock(thread.data->alive.mutex);
+		return (1);
 	}
+	pthread_mutex_unlock(thread.data->alive.mutex);
+	return (0);
 }
 
 void	*ft_calloc(size_t nmemb, size_t size)
@@ -99,4 +89,36 @@ void	*ft_calloc(size_t nmemb, size_t size)
 		n--;
 	}
 	return (result);
+}
+
+void	ft_putnbr(long long int n)
+{
+	int				size;
+	long long int	temp;
+	char			c;
+
+	size = 1;
+	temp = n;
+	while (temp / 10 != 0)
+	{
+		temp /= 10;
+		size *= 10;
+	}
+	while (size != 0)
+	{
+		c = (n / size) + '0';
+		write(STDOUT_FILENO, &c, 1);
+		n = n % size;
+		size = size / 10;
+	}
+}
+
+int	ft_strlen(char *str)
+{
+	int	i;
+
+	i = 0;
+	while (str[i])
+		i++;
+	return (i);
 }

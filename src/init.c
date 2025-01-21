@@ -6,13 +6,25 @@
 /*   By: kbaridon <kbaridon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/07 11:52:30 by kbaridon          #+#    #+#             */
-/*   Updated: 2025/01/17 11:47:36 by kbaridon         ###   ########.fr       */
+/*   Updated: 2025/01/21 16:21:23 by kbaridon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 #include <stdlib.h>
 #include <unistd.h>
+
+void	synchronize(t_thread *thread)
+{
+	pthread_mutex_lock(thread->data->alive.mutex);
+	while (thread->data->alive.value == 2)
+	{
+		pthread_mutex_unlock(thread->data->alive.mutex);
+		usleep(100);
+		pthread_mutex_lock(thread->data->alive.mutex);
+	}
+	pthread_mutex_unlock(thread->data->alive.mutex);
+}
 
 pthread_t	*init_mutex(t_philo *data, int num, pthread_t *tid)
 {
@@ -33,11 +45,47 @@ pthread_t	*init_mutex(t_philo *data, int num, pthread_t *tid)
 			}
 			free(tid);
 			free(data->mutex);
-			return (NULL);
+			pthread_mutex_destroy(data->alive.mutex);
+			pthread_mutex_destroy(data->writing);
+			return (free(data->writing), free(data->alive.mutex), NULL);
 		}
 		i++;
 	}
 	return (tid);
+}
+
+t_philo	*init_shared(t_philo *data)
+{
+	data->alive.mutex = malloc(sizeof(pthread_mutex_t) * 1);
+	if (!data->alive.mutex || pthread_mutex_init(data->alive.mutex, NULL) != 0)
+	{
+		if (data->alive.mutex)
+			free(data->alive.mutex);
+		return (NULL);
+	}
+	data->alive.value = 2;
+	data->writing = malloc(sizeof(pthread_mutex_t) * 1);
+	if (!data->writing || pthread_mutex_init(data->writing, NULL) != 0)
+	{
+		pthread_mutex_destroy(data->alive.mutex);
+		free(data->alive.mutex);
+		if (data->writing)
+			free(data->writing);
+		return (NULL);
+	}
+	return (data);
+}
+
+t_philo	*init_basics(char **av, t_philo *data)
+{
+	data->num_total = ft_atoi(av[1]);
+	data->time_die = ft_atoi(av[2]);
+	data->time_eat = ft_atoi(av[3]);
+	data->time_sleep = ft_atoi(av[4]);
+	if (data->num_total < 1 || data->time_die < 1 || \
+	data->time_eat < 1 || data->time_sleep < 1)
+		return (NULL);
+	return (data);
 }
 
 pthread_t	*init(int ac, char **av, t_philo *data)
@@ -46,21 +94,23 @@ pthread_t	*init(int ac, char **av, t_philo *data)
 
 	if (ac != 5)
 		return (write(2, "Error.\nWrong parameters.\n", 25), NULL);
+	data = init_basics(av, data);
+	if (!data)
+		return (write(2, "Error.\nInvalid parameters.\n", 27), NULL);
 	tid = ft_calloc(sizeof(pthread_t), ft_atoi(av[1]) + 1);
 	if (!tid)
 		return (write(2, "Error.\nMalloc failed.\n", 22), NULL);
 	gettimeofday(&(*data).tv, NULL);
-	(*data).num_total = ft_atoi(av[1]);
-	(*data).time_die = ft_atoi(av[2]);
-	(*data).time_eat = ft_atoi(av[3]);
-	(*data).time_sleep = ft_atoi(av[4]);
-	(*data).mutex = ft_calloc(sizeof(pthread_mutex_t *), data->num_total + 1);
-	(*data).alive = 2;
+	data = init_shared(data);
+	if (!data)
+		return (free(tid), write(2, "Error.\nShared values init.\n", 22), NULL);
+	data->mutex = ft_calloc(sizeof(pthread_mutex_t *), data->num_total + 1);
 	if (!(*data).mutex)
 	{
 		free(tid);
-		write(2, "Error.\nMalloc failed.\n", 22);
-		return (NULL);
+		(pthread_mutex_destroy(data->alive.mutex), free(data->alive.mutex));
+		(pthread_mutex_destroy(data->writing), free(data->writing));
+		return (write(2, "Error.\nMalloc failed.\n", 22), NULL);
 	}
 	return (init_mutex(data, data->num_total, tid));
 }
