@@ -6,7 +6,7 @@
 /*   By: kbaridon <kbaridon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/07 11:52:30 by kbaridon          #+#    #+#             */
-/*   Updated: 2025/01/21 16:21:23 by kbaridon         ###   ########.fr       */
+/*   Updated: 2025/01/23 11:47:21 by kbaridon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@ void	synchronize(t_thread *thread)
 		pthread_mutex_lock(thread->data->alive.mutex);
 	}
 	pthread_mutex_unlock(thread->data->alive.mutex);
+	if (thread->num % 2 == 0)
+		usleep(2000);
 }
 
 pthread_t	*init_mutex(t_philo *data, int num, pthread_t *tid)
@@ -76,12 +78,29 @@ t_philo	*init_shared(t_philo *data)
 	return (data);
 }
 
-t_philo	*init_basics(char **av, t_philo *data)
+t_philo	*init_basics(int ac, char **av, t_philo *data)
 {
+	int	i;
+	int	j;
+
+	i = 0;
+	while (av[++i])
+	{
+		j = -1;
+		while (av[i][++j])
+		{
+			if ('0' > av[i][j] || '9' < av[i][j])
+				return (NULL);
+		}
+	}
 	data->num_total = ft_atoi(av[1]);
 	data->time_die = ft_atoi(av[2]);
 	data->time_eat = ft_atoi(av[3]);
 	data->time_sleep = ft_atoi(av[4]);
+	if (ac == 6)
+		data->nb_eat = ft_atoi(av[5]);
+	else
+		data->nb_eat = -1;
 	if (data->num_total < 1 || data->time_die < 1 || \
 	data->time_eat < 1 || data->time_sleep < 1)
 		return (NULL);
@@ -92,9 +111,9 @@ pthread_t	*init(int ac, char **av, t_philo *data)
 {
 	pthread_t	*tid;
 
-	if (ac != 5)
+	if (ac < 5 || ac > 6)
 		return (write(2, "Error.\nWrong parameters.\n", 25), NULL);
-	data = init_basics(av, data);
+	data = init_basics(ac, av, data);
 	if (!data)
 		return (write(2, "Error.\nInvalid parameters.\n", 27), NULL);
 	tid = ft_calloc(sizeof(pthread_t), ft_atoi(av[1]) + 1);

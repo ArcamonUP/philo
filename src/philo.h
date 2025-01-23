@@ -6,7 +6,7 @@
 /*   By: kbaridon <kbaridon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/07 11:06:40 by kbaridon          #+#    #+#             */
-/*   Updated: 2025/01/21 16:27:21 by kbaridon         ###   ########.fr       */
+/*   Updated: 2025/01/23 11:59:28 by kbaridon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ typedef struct s_philo
 	int				time_die;
 	int				time_eat;
 	int				time_sleep;
+	int				nb_eat;
 	struct timeval	tv;
 	pthread_mutex_t	**mutex;
 	pthread_mutex_t	*writing;
@@ -52,14 +53,16 @@ int			philo_sleep(t_thread thread, struct timeval tv);
 
 //utils.c
 int			ft_atoi(const char *str);
-int			is_out_of_time(t_thread thread, struct timeval tv);
+int			is_out_of_time(t_thread thread, struct timeval tv, int move);
 void		*ft_calloc(size_t nmemb, size_t size);
 void		ft_putnbr(long long int n);
 int			ft_strlen(char *str);
 
 //free.c
-t_thread	*cp_data(t_philo *data, int i);
 void		free_thread(pthread_t *tid, int num);
 void		free_mutex(t_philo data);
+
+//threads.c
+t_thread	*cp_data(t_philo *data, int i);
 
 #endif

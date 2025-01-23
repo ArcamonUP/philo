@@ -6,7 +6,7 @@
 /*   By: kbaridon <kbaridon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/07 11:50:41 by kbaridon          #+#    #+#             */
-/*   Updated: 2025/01/21 16:09:21 by kbaridon         ###   ########.fr       */
+/*   Updated: 2025/01/23 12:04:54 by kbaridon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,29 +42,30 @@ int	ft_atoi(const char *str)
 	return (result * nb);
 }
 
-int	is_out_of_time(t_thread thread, struct timeval tv)
+int	is_out_of_time(t_thread thread, struct timeval tv, int move)
 {
 	struct timeval	tv2;
-	long long int	time;
+	long long int	current_time;
+	long long int	max_time;
 
-	pthread_mutex_lock(thread.data->alive.mutex);
 	gettimeofday(&tv2, NULL);
-	time = (tv2.tv_sec - tv.tv_sec) * 1000;
-	time += (tv2.tv_usec - tv.tv_usec) / 1000;
-	if (!thread.data->alive.value || thread.data->time_die < time)
+	max_time = (tv.tv_sec * 1000) + (tv.tv_usec / 1000) + thread.data->time_die;
+	current_time = (tv2.tv_sec * 1000) + (tv2.tv_usec / 1000);
+	pthread_mutex_lock(thread.data->alive.mutex);
+	if (!thread.data->alive.value || current_time > max_time)
 	{
 		if (thread.data->alive.value)
 		{
 			thread.data->alive.value = 0;
 			print_move(thread, "died");
 		}
-		else
-			pthread_mutex_unlock(thread.data->writing);
 		pthread_mutex_unlock(thread.data->alive.mutex);
-		return (1);
+		return (-1);
 	}
 	pthread_mutex_unlock(thread.data->alive.mutex);
-	return (0);
+	if (current_time + move < max_time)
+		return (move * 1000);
+	return ((max_time - current_time + 1) * 1000);
 }
 
 void	*ft_calloc(size_t nmemb, size_t size)

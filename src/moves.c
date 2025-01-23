@@ -6,7 +6,7 @@
 /*   By: kbaridon <kbaridon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 14:07:22 by kbaridon          #+#    #+#             */
-/*   Updated: 2025/01/21 16:25:40 by kbaridon         ###   ########.fr       */
+/*   Updated: 2025/01/23 12:08:15 by kbaridon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,11 +19,12 @@ void	print_move(t_thread thread, char *str)
 	struct timeval	tv2;
 	long long int	time;
 
+	pthread_mutex_lock(thread.data->writing);
 	gettimeofday(&tv2, NULL);
 	time = (tv2.tv_sec - thread.data->tv.tv_sec) * 1000000;
 	time += tv2.tv_usec - thread.data->tv.tv_usec;
 	ft_putnbr(time / 1000);
-	write(STDOUT_FILENO, ": ", 2);
+	write(STDOUT_FILENO, " ", 1);
 	ft_putnbr(thread.num);
 	write(STDOUT_FILENO, " ", 1);
 	write(STDOUT_FILENO, str, ft_strlen(str));
@@ -37,22 +38,21 @@ int	philo_took_second_fork(t_thread th, struct timeval tv, int previous)
 
 	if (th.data->num_total == 1)
 	{
-		pthread_mutex_lock(th.data->writing);
-		while (!is_out_of_time(th, tv))
+		while (is_out_of_time(th, tv, 0) != -1)
 			usleep(100);
 		return (pthread_mutex_unlock(th.data->mutex[previous]), 1);
 	}
 	fork = th.num - 2;
 	if (fork < 0)
 		fork = th.data->num_total - 1;
-	if (th.num % 2 == 0 || th.num == th.data->num_total)
+	else if (th.num % 2 == 0 || th.num == th.data->num_total)
 		fork++;
 	pthread_mutex_lock(th.data->mutex[fork]);
-	pthread_mutex_lock(th.data->writing);
-	if (is_out_of_time(th, tv))
+	if (is_out_of_time(th, tv, 0) == -1)
 	{
 		pthread_mutex_unlock(th.data->mutex[previous]);
-		return (pthread_mutex_unlock(th.data->mutex[fork]), 1);
+		pthread_mutex_unlock(th.data->mutex[fork]);
+		return (1);
 	}
 	return (print_move(th, "has taken a fork"), 0);
 }
@@ -61,16 +61,13 @@ int	philo_took_fork(t_thread th, struct timeval tv)
 {
 	int				fork;
 
-	if (is_out_of_time(th, tv))
-		return (1);
 	fork = th.num - 1;
 	if (th.num % 2 == 0 || th.num == th.data->num_total)
 		fork--;
 	if (th.data->num_total == 1)
 		fork = 0;
 	pthread_mutex_lock(th.data->mutex[fork]);
-	pthread_mutex_lock(th.data->writing);
-	if (is_out_of_time(th, tv))
+	if (is_out_of_time(th, tv, 0) == -1)
 		return (pthread_mutex_unlock(th.data->mutex[fork]), 1);
 	print_move(th, "has taken a fork");
 	return (philo_took_second_fork(th, tv, fork));
@@ -79,9 +76,10 @@ int	philo_took_fork(t_thread th, struct timeval tv)
 int	philo_eat(t_thread thread, struct timeval tv)
 {
 	int				fork;
+	int				time;
 
-	pthread_mutex_lock(thread.data->writing);
-	if (is_out_of_time(thread, tv))
+	time = is_out_of_time(thread, tv, thread.data->time_eat);
+	if (time == -1)
 	{
 		pthread_mutex_unlock(thread.data->mutex[thread.num - 1]);
 		fork = thread.num - 2;
@@ -91,23 +89,27 @@ int	philo_eat(t_thread thread, struct timeval tv)
 		return (1);
 	}
 	print_move(thread, "is eating");
-	usleep(thread.data->time_eat * 1000);
+	usleep(time);
 	pthread_mutex_unlock(thread.data->mutex[thread.num - 1]);
 	fork = thread.num - 2;
 	if (fork < 0)
 		fork = thread.data->num_total - 1;
-	return (pthread_mutex_unlock(thread.data->mutex[fork]), 0);
+	pthread_mutex_unlock(thread.data->mutex[fork]);
+	if (is_out_of_time(thread, tv, 0) == -1)
+		return (1);
+	return (0);
 }
 
 int	philo_sleep(t_thread thread, struct timeval tv)
 {
-	pthread_mutex_lock(thread.data->writing);
-	if (is_out_of_time(thread, tv))
+	int	time;
+
+	time = is_out_of_time(thread, tv, thread.data->time_sleep);
+	if (time == -1)
 		return (1);
 	print_move(thread, "is sleeping");
-	usleep(thread.data->time_sleep * 1000);
-	pthread_mutex_lock(thread.data->writing);
-	if (is_out_of_time(thread, tv))
+	usleep(time);
+	if (is_out_of_time(thread, tv, 0) == -1)
 		return (1);
 	print_move(thread, "is thinking");
 	return (0);

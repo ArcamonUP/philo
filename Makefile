@@ -6,7 +6,7 @@
 #    By: kbaridon <kbaridon@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/01/07 11:00:38 by kbaridon          #+#    #+#              #
-#    Updated: 2025/01/20 15:33:00 by kbaridon         ###   ########.fr        #
+#    Updated: 2025/01/23 10:05:00 by kbaridon         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,10 +16,11 @@ NAME = philo
 SRCDIR = src
 HEADERS = $(SRCDIR)/philo.h
 
-SRC =	philo.c \
-		init.c	\
-		moves.c	\
-		utils.c	\
+SRC =	philo.c		\
+		init.c		\
+		moves.c		\
+		threads.c	\
+		utils.c		\
 		free.c
 
 OBJS = $(addprefix $(SRCDIR)/, $(SRC:.c=.o))
