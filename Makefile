@@ -6,20 +6,21 @@
 #    By: kbaridon <kbaridon@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/01/07 11:00:38 by kbaridon          #+#    #+#              #
-#    Updated: 2025/01/23 10:05:00 by kbaridon         ###   ########.fr        #
+#    Updated: 2025/01/23 15:25:44 by kbaridon         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CC = cc
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra -Werror -I $(INCDIR)
 NAME = philo
 SRCDIR = src
-HEADERS = $(SRCDIR)/philo.h
+INCDIR = include
+HEADERS = $(INCDIR)/philo.h
 
 SRC =	philo.c		\
 		init.c		\
-		moves.c		\
 		threads.c	\
+		moves.c		\
 		utils.c		\
 		free.c
 

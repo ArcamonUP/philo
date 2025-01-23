@@ -6,14 +6,14 @@
 /*   By: kbaridon <kbaridon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 14:07:22 by kbaridon          #+#    #+#             */
-/*   Updated: 2025/01/23 12:08:15 by kbaridon         ###   ########.fr       */
+/*   Updated: 2025/01/23 15:28:44 by kbaridon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
-#include <stdio.h>
 #include <unistd.h>
 
+//To secure and print each move one of my philosophers does
 void	print_move(t_thread thread, char *str)
 {
 	struct timeval	tv2;
@@ -32,6 +32,7 @@ void	print_move(t_thread thread, char *str)
 	pthread_mutex_unlock(thread.data->writing);
 }
 
+//To make the philosopher take the second fork (secure)
 int	philo_took_second_fork(t_thread th, struct timeval tv, int previous)
 {
 	int	fork;
@@ -57,6 +58,8 @@ int	philo_took_second_fork(t_thread th, struct timeval tv, int previous)
 	return (print_move(th, "has taken a fork"), 0);
 }
 
+//Philosopher take fork: half of philosphers want to take the fork on his left,
+//and the other half want to take the fork on his right.
 int	philo_took_fork(t_thread th, struct timeval tv)
 {
 	int				fork;
@@ -73,6 +76,7 @@ int	philo_took_fork(t_thread th, struct timeval tv)
 	return (philo_took_second_fork(th, tv, fork));
 }
 
+//Philosopher eat and reset their couldown (before die)
 int	philo_eat(t_thread thread, struct timeval tv)
 {
 	int				fork;
@@ -100,7 +104,8 @@ int	philo_eat(t_thread thread, struct timeval tv)
 	return (0);
 }
 
-int	philo_sleep(t_thread thread, struct timeval tv)
+//Philosophers sleep and think
+int	philo_sleep_think(t_thread thread, struct timeval tv)
 {
 	int	time;
 

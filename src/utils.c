@@ -6,16 +6,16 @@
 /*   By: kbaridon <kbaridon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/07 11:50:41 by kbaridon          #+#    #+#             */
-/*   Updated: 2025/01/23 12:04:54 by kbaridon         ###   ########.fr       */
+/*   Updated: 2025/01/23 15:29:14 by kbaridon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdint.h>
 #include <unistd.h>
+#include <stdint.h>
+#include <stdlib.h>
 
+//A classic str to int converter
 int	ft_atoi(const char *str)
 {
 	int	nb;
@@ -42,32 +42,7 @@ int	ft_atoi(const char *str)
 	return (result * nb);
 }
 
-int	is_out_of_time(t_thread thread, struct timeval tv, int move)
-{
-	struct timeval	tv2;
-	long long int	current_time;
-	long long int	max_time;
-
-	gettimeofday(&tv2, NULL);
-	max_time = (tv.tv_sec * 1000) + (tv.tv_usec / 1000) + thread.data->time_die;
-	current_time = (tv2.tv_sec * 1000) + (tv2.tv_usec / 1000);
-	pthread_mutex_lock(thread.data->alive.mutex);
-	if (!thread.data->alive.value || current_time > max_time)
-	{
-		if (thread.data->alive.value)
-		{
-			thread.data->alive.value = 0;
-			print_move(thread, "died");
-		}
-		pthread_mutex_unlock(thread.data->alive.mutex);
-		return (-1);
-	}
-	pthread_mutex_unlock(thread.data->alive.mutex);
-	if (current_time + move < max_time)
-		return (move * 1000);
-	return ((max_time - current_time + 1) * 1000);
-}
-
+//A classic calloc function (malloc + bzero)
 void	*ft_calloc(size_t nmemb, size_t size)
 {
 	void			*result;
@@ -92,6 +67,7 @@ void	*ft_calloc(size_t nmemb, size_t size)
 	return (result);
 }
 
+//A classic putnbr, but for very long int
 void	ft_putnbr(long long int n)
 {
 	int				size;
@@ -114,6 +90,7 @@ void	ft_putnbr(long long int n)
 	}
 }
 
+//Return the len of a string
 int	ft_strlen(char *str)
 {
 	int	i;

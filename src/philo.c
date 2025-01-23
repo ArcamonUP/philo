@@ -6,15 +6,14 @@
 /*   By: kbaridon <kbaridon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/07 11:06:08 by kbaridon          #+#    #+#             */
-/*   Updated: 2025/01/23 10:06:28 by kbaridon         ###   ########.fr       */
+/*   Updated: 2025/01/23 16:18:14 by kbaridon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
-#include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
 
+//Philo, contains the init/synchronize, and the routine.
 void	*philo(void *arg)
 {
 	t_thread		*thread;
@@ -23,49 +22,49 @@ void	*philo(void *arg)
 
 	if (!arg)
 		return (NULL);
-	thread = arg;
-	synchronize(thread);
+	thread = (t_thread *)arg;
+	if (synchronize(thread))
+		return (NULL);
 	tv = thread->data->tv;
 	i = 0;
 	while (1)
 	{
 		if (philo_took_fork(*thread, tv))
-			return (free(arg), NULL);
+			return (NULL);
 		if (philo_eat(*thread, tv))
-			return (free(arg), NULL);
+			return (NULL);
 		i++;
 		if (i == thread->data->nb_eat)
-			return (free(arg), NULL);
+			return (NULL);
 		gettimeofday(&tv, NULL);
-		if (philo_sleep(*thread, tv))
-			return (free(arg), NULL);
+		if (philo_sleep_think(*thread, tv))
+			return (NULL);
 	}
 }
 
+//Main: It's the dispatcher, the first function that my program call
 int	main(int ac, char **av)
 {
 	pthread_t		*tid;
+	t_thread		**thread_data;
 	t_philo			data;
 	int				i;
 
-	//Faire tests de -1 a 10.
-	//il faut parser tout : pas de char, bon nombres d'args. Il peut y en avoir 6
 	//check si les pthread_create/init/mutex/gettime fail a chaque fois : ils peuvent fail
-	//philo 4 410 200 200 : Doit fonctionner sans morts : pas le cas actuellement
-	//Temps pour detacter la mort un peu trop long : a fix aussi
-	//Regler le pb dans le main ci-dessous.
-	tid = init(ac, av, &data);
+	//philo 4 410 200 200 : Doit fonctionner sans morts
+	tid = init(ac, av, &data, &thread_data);
 	if (!tid)
 		return (1);
 	i = 0;
 	while (i < data.num_total)
 	{
-		if (pthread_create(&tid[i], NULL, philo, cp_data(&data, i)) != 0)
-		{
-			(free_thread(tid, i + 1), free_mutex(data));
-			return (write(2, "Error.\nFailed to create thread.\n", 32), 1);
-		}
+		int y = 0;
+		thread_data[i] = cp_data(&data, i);
+		if (pthread_create(&tid[i], NULL, philo, thread_data[i]) != 0 || (y != 2))
+			return (fail_process(data, thread_data, tid, i + 1));
 		i++;
+		y++;
+		//bien sur : enlever le y apres
 	}
 	pthread_mutex_lock(data.alive.mutex);
 	data.alive.value = 1;
@@ -74,5 +73,5 @@ int	main(int ac, char **av)
 	i = 0;
 	while (tid[i])
 		pthread_join(tid[i++], NULL);
-	return (free(tid), free_mutex(data), 0);
+	return (free(tid), free_mutex(data), free_t_data(thread_data), 0);
 }

@@ -6,28 +6,15 @@
 /*   By: kbaridon <kbaridon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/07 11:52:30 by kbaridon          #+#    #+#             */
-/*   Updated: 2025/01/23 11:47:21 by kbaridon         ###   ########.fr       */
+/*   Updated: 2025/01/23 16:13:33 by kbaridon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
-#include <stdlib.h>
 #include <unistd.h>
+#include <stdlib.h>
 
-void	synchronize(t_thread *thread)
-{
-	pthread_mutex_lock(thread->data->alive.mutex);
-	while (thread->data->alive.value == 2)
-	{
-		pthread_mutex_unlock(thread->data->alive.mutex);
-		usleep(100);
-		pthread_mutex_lock(thread->data->alive.mutex);
-	}
-	pthread_mutex_unlock(thread->data->alive.mutex);
-	if (thread->num % 2 == 0)
-		usleep(2000);
-}
-
+//To init all the forks of the philosophers
 pthread_t	*init_mutex(t_philo *data, int num, pthread_t *tid)
 {
 	int	i;
@@ -56,6 +43,7 @@ pthread_t	*init_mutex(t_philo *data, int num, pthread_t *tid)
 	return (tid);
 }
 
+//To init all the shared values (accessible in each threads)
 t_philo	*init_shared(t_philo *data)
 {
 	data->alive.mutex = malloc(sizeof(pthread_mutex_t) * 1);
@@ -107,7 +95,7 @@ t_philo	*init_basics(int ac, char **av, t_philo *data)
 	return (data);
 }
 
-pthread_t	*init(int ac, char **av, t_philo *data)
+pthread_t	*init(int ac, char **av, t_philo *data, t_thread ***t_data)
 {
 	pthread_t	*tid;
 
@@ -119,7 +107,9 @@ pthread_t	*init(int ac, char **av, t_philo *data)
 	tid = ft_calloc(sizeof(pthread_t), ft_atoi(av[1]) + 1);
 	if (!tid)
 		return (write(2, "Error.\nMalloc failed.\n", 22), NULL);
-	gettimeofday(&(*data).tv, NULL);
+	*t_data = ft_calloc(sizeof(t_thread *), data->num_total + 1);
+	if (!*t_data)
+		return (write(2, "Error.\nMalloc failed.\n", 22), free(tid), NULL);
 	data = init_shared(data);
 	if (!data)
 		return (free(tid), write(2, "Error.\nShared values init.\n", 22), NULL);
