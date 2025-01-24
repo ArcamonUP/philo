@@ -6,7 +6,7 @@
 /*   By: kbaridon <kbaridon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/07 11:06:40 by kbaridon          #+#    #+#             */
-/*   Updated: 2025/01/23 16:17:12 by kbaridon         ###   ########.fr       */
+/*   Updated: 2025/01/24 14:41:55 by kbaridon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,12 @@
 
 # include <sys/time.h>
 # include <pthread.h>
+
+# define WAIT 2
+# define ALIVE 1
+# define DEAD 0
+# define EXIT_FAILURE 1
+# define EXIT_SUCCESS 0
 
 typedef struct s_shared_value
 {
@@ -57,7 +63,8 @@ void		ft_putnbr(long long int n);
 int			ft_strlen(char *str);
 
 //free.c
-int			fail_process(t_philo data, t_thread **thd, pthread_t *tid, int num);
+int			fail_process(t_philo *data, t_thread **thd, pthread_t *tid);
+int			end_process(t_philo *data, t_thread **thd, pthread_t *tid, int ret);
 void		free_mutex(t_philo data);
 void		free_t_data(t_thread **t_data);
 

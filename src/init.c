@@ -6,7 +6,7 @@
 /*   By: kbaridon <kbaridon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/07 11:52:30 by kbaridon          #+#    #+#             */
-/*   Updated: 2025/01/23 16:13:33 by kbaridon         ###   ########.fr       */
+/*   Updated: 2025/01/24 12:09:37 by kbaridon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-//To init all the forks of the philosophers
+// Initializes all philosopher forks with mutexes
 pthread_t	*init_mutex(t_philo *data, int num, pthread_t *tid)
 {
 	int	i;
@@ -43,7 +43,7 @@ pthread_t	*init_mutex(t_philo *data, int num, pthread_t *tid)
 	return (tid);
 }
 
-//To init all the shared values (accessible in each threads)
+// Initializes shared data for philosopher threads
 t_philo	*init_shared(t_philo *data)
 {
 	data->alive.mutex = malloc(sizeof(pthread_mutex_t) * 1);
@@ -53,7 +53,7 @@ t_philo	*init_shared(t_philo *data)
 			free(data->alive.mutex);
 		return (NULL);
 	}
-	data->alive.value = 2;
+	data->alive.value = WAIT;
 	data->writing = malloc(sizeof(pthread_mutex_t) * 1);
 	if (!data->writing || pthread_mutex_init(data->writing, NULL) != 0)
 	{
@@ -66,6 +66,7 @@ t_philo	*init_shared(t_philo *data)
 	return (data);
 }
 
+// Validates input and initializes basic philosopher data
 t_philo	*init_basics(int ac, char **av, t_philo *data)
 {
 	int	i;
@@ -95,6 +96,7 @@ t_philo	*init_basics(int ac, char **av, t_philo *data)
 	return (data);
 }
 
+// General initialization for philosophers, forks, and shared data
 pthread_t	*init(int ac, char **av, t_philo *data, t_thread ***t_data)
 {
 	pthread_t	*tid;

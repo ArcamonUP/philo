@@ -6,7 +6,7 @@
 /*   By: kbaridon <kbaridon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/07 11:50:41 by kbaridon          #+#    #+#             */
-/*   Updated: 2025/01/23 15:29:14 by kbaridon         ###   ########.fr       */
+/*   Updated: 2025/01/24 12:15:34 by kbaridon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-//A classic str to int converter
+// A classic str to int converter
 int	ft_atoi(const char *str)
 {
 	int	nb;
