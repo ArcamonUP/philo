@@ -6,7 +6,7 @@
 /*   By: kbaridon <kbaridon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/07 11:06:08 by kbaridon          #+#    #+#             */
-/*   Updated: 2025/01/28 14:40:21 by kbaridon         ###   ########.fr       */
+/*   Updated: 2025/01/28 15:10:27 by kbaridon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,24 +22,23 @@ void	*philo(void *arg)
 	int				i;
 
 	if (!arg)
-		exit(EXIT_FAILURE);
+		return (NULL);
 	thread = (t_thread *)arg;
 	if (synchronize(thread))
-		exit(EXIT_FAILURE);
-	write(2, "test\n", 5);
+		return (NULL);
 	tv = thread->data->tv;
 	i = 0;
 	while (1)
 	{
 		if (philo_took_fork(*thread, tv))
-			exit(EXIT_SUCCESS);
+			return (NULL);
 		if (philo_eat(*thread, tv))
-			exit(EXIT_SUCCESS);
+			return (NULL);
 		i++;
 		incr_finished(thread, i);
 		gettimeofday(&tv, NULL);
 		if (philo_sleep_think(*thread, tv))
-			exit(EXIT_SUCCESS);
+			return (NULL);
 	}
 }
 
@@ -48,7 +47,7 @@ int	main(int ac, char **av)
 {
 	t_thread		**thread_data;
 	t_philo			data;
-	pid_t			*tid;
+	pthread_t		*tid;
 	int				i;
 
 	tid = init(ac, av, &data, &thread_data);
@@ -58,11 +57,8 @@ int	main(int ac, char **av)
 	while (i < data.num_total)
 	{
 		thread_data[i] = cp_data(&data, i);
-		tid[i] = fork();
-		if (tid[i] == -1)
+		if (pthread_create(&tid[i], NULL, philo, thread_data[i]) != 0)
 			return (end_process(&data, thread_data, tid, EXIT_FAILURE));
-		if (tid[i] == 0)
-			philo(thread_data[i]);
 		i++;
 	}
 	return (end_process(&data, thread_data, tid, EXIT_SUCCESS));

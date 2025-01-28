@@ -6,7 +6,7 @@
 /*   By: kbaridon <kbaridon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/07 11:52:30 by kbaridon          #+#    #+#             */
-/*   Updated: 2025/01/28 14:52:08 by kbaridon         ###   ########.fr       */
+/*   Updated: 2025/01/28 15:11:44 by kbaridon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,16 +85,16 @@ t_philo	*init_basics(int ac, char **av, t_philo *data)
 }
 
 // General initialization for philosophers, forks, and shared data
-pid_t	*init(int ac, char **av, t_philo *data, t_thread ***t_data)
+pthread_t	*init(int ac, char **av, t_philo *data, t_thread ***t_data)
 {
-	pid_t	*tid;
+	pthread_t	*tid;
 
 	if (ac < 5 || ac > 6)
 		return (write(2, "Error.\nWrong parameters.\n", 25), NULL);
 	data = init_basics(ac, av, data);
 	if (!data)
 		return (write(2, "Error.\nInvalid parameters.\n", 27), NULL);
-	tid = ft_calloc(sizeof(pid_t), ft_atoi(av[1]) + 1);
+	tid = ft_calloc(sizeof(pthread_t), ft_atoi(av[1]) + 1);
 	if (!tid)
 		return (write(2, "Error.\nMalloc failed.\n", 22), NULL);
 	*t_data = ft_calloc(sizeof(t_thread *), data->num_total + 1);

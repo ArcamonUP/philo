@@ -6,7 +6,7 @@
 /*   By: kbaridon <kbaridon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/07 11:06:40 by kbaridon          #+#    #+#             */
-/*   Updated: 2025/01/28 14:53:52 by kbaridon         ###   ########.fr       */
+/*   Updated: 2025/01/28 15:11:27 by kbaridon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 # include <sys/time.h>
 # include <semaphore.h>
+# include <pthread.h>
 
 # define WAIT 2
 # define ALIVE 1
@@ -49,7 +50,7 @@ typedef struct s_thread
 }	t_thread;
 
 //init.c
-pid_t		*init(int ac, char **av, t_philo *data, t_thread ***t_data);
+pthread_t	*init(int ac, char **av, t_philo *data, t_thread ***t_data);
 
 //moves.c
 void		print_move(t_thread thread, char *str, int num);
@@ -62,7 +63,7 @@ int			ft_atoi(const char *str);
 void		*ft_calloc(size_t nmemb, size_t size);
 
 //free.c
-int			end_process(t_philo *data, t_thread **thd, int *tid, int ret);
+int			end_process(t_philo *data, t_thread **thd, pthread_t *tid, int ret);
 void		free_semaphore(t_philo data);
 void		free_t_data(t_thread **t_data);
 

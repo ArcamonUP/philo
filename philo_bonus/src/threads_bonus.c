@@ -6,7 +6,7 @@
 /*   By: kbaridon <kbaridon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/23 09:58:12 by kbaridon          #+#    #+#             */
-/*   Updated: 2025/01/28 14:13:24 by kbaridon         ###   ########.fr       */
+/*   Updated: 2025/01/28 15:14:22 by kbaridon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ void	incr_finished(t_thread *th, int i)
 
 	if (th->data->nb_eat == -1 || i != th->data->nb_eat)
 		return ;
-	sem_post(th->data->finished.semaphore);
+	sem_wait(th->data->finished.semaphore);
 	th->data->finished.value++;
 	if (th->data->finished.value == th->data->num_total)
 	{
@@ -61,7 +61,6 @@ int	synchronize(t_thread *thread)
 	sem_wait(thread->data->alive.semaphore);
 	while (thread->data->alive.value == WAIT)
 	{
-		write(2, "non", 3);
 		sem_post(thread->data->alive.semaphore);
 		usleep(1000);
 		sem_wait(thread->data->alive.semaphore);
