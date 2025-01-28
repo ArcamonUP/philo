@@ -1,76 +1,70 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   free_bonus.c                                       :+:      :+:    :+:   */
+/*   free.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: kbaridon <kbaridon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 11:39:27 by kbaridon          #+#    #+#             */
-/*   Updated: 2025/01/28 14:12:48 by kbaridon         ###   ########.fr       */
+/*   Updated: 2025/01/28 12:00:23 by kbaridon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "philo_bonus.h"
+#include "philo.h"
 #include <stdlib.h>
 #include <unistd.h>
-#include <sys/wait.h>
-
-void	monitoring(t_philo *data)
-{
-	sem_wait(data->alive.semaphore);
-	while (data->alive.value == ALIVE)
-	{
-		sem_post(data->alive.semaphore);
-		usleep(1000);
-		sem_wait(data->alive.semaphore);
-	}
-	sem_post(data->alive.semaphore);
-	usleep(1000);
-	return ;
-}
 
 // Process to free + display an error in case of thread creation failure
-int	end_process(t_philo *data, t_thread **thd, int *tid, int ret)
+int	end_process(t_philo *data, t_thread **thd, pthread_t *tid, int ret)
 {
 	int	i;
 
 	if (ret == EXIT_FAILURE)
 	{
-		sem_wait(data->alive.semaphore);
+		pthread_mutex_lock(data->alive.mutex);
 		data->alive.value = DEAD;
-		sem_post(data->alive.semaphore);
+		pthread_mutex_unlock(data->alive.mutex);
 	}
 	else
 	{
-		sem_wait(data->alive.semaphore);
+		pthread_mutex_lock(data->alive.mutex);
 		data->alive.value = ALIVE;
 		gettimeofday(&data->tv, NULL);
-		write(2, "updated\n", 8);
-		sem_post(data->alive.semaphore);
-		monitoring(data);
+		pthread_mutex_unlock(data->alive.mutex);
 	}
 	i = 0;
 	while (tid[i])
-		waitpid(tid[i++], NULL, 0);
+		pthread_join(tid[i++], NULL);
 	free(tid);
-	free_semaphore(*data);
+	free_mutex(*data);
 	free_t_data(thd);
 	if (ret == EXIT_FAILURE)
 		write(2, "Error.\nFailed to create thread.\n", 32);
 	return (ret);
 }
 
-// Frees all allocated semaphores
-void	free_semaphore(t_philo data)
+// Frees all allocated mutexes
+void	free_mutex(t_philo data)
 {
-	sem_close(data.alive.semaphore);
-	sem_unlink("/alive");
-	sem_close(data.writing);
-	sem_unlink("/writing");
-	sem_close(data.forks.semaphore);
-	sem_unlink("/forks");
-	sem_close(data.finished.semaphore);
-	sem_unlink("finished");
+	int	i;
+
+	i = 0;
+	while (data.mutex[i])
+	{
+		pthread_mutex_destroy(data.mutex[i]);
+		free(data.mutex[i]);
+		i++;
+	}
+	free(data.mutex);
+	pthread_mutex_destroy(data.alive.mutex);
+	free(data.alive.mutex);
+	pthread_mutex_destroy(data.writing);
+	free(data.writing);
+	if (data.nb_eat != -1)
+	{
+		pthread_mutex_destroy(data.finished.mutex);
+		free(data.finished.mutex);
+	}
 }
 
 // Frees all thread data structures

@@ -1,20 +1,20 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   philo_bonus.h                                      :+:      :+:    :+:   */
+/*   philo.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: kbaridon <kbaridon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/07 11:06:40 by kbaridon          #+#    #+#             */
-/*   Updated: 2025/01/28 14:53:52 by kbaridon         ###   ########.fr       */
+/*   Updated: 2025/01/28 11:47:37 by kbaridon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef PHILO_BONUS_H
-# define PHILO_BONUS_H
+#ifndef PHILO_H
+# define PHILO_H
 
 # include <sys/time.h>
-# include <semaphore.h>
+# include <pthread.h>
 
 # define WAIT 2
 # define ALIVE 1
@@ -24,8 +24,8 @@
 
 typedef struct s_shared_value
 {
-	sem_t	*semaphore;
-	int		value;
+	pthread_mutex_t	*mutex;
+	int				value;
 }	t_shared;
 
 typedef struct s_philo
@@ -36,10 +36,10 @@ typedef struct s_philo
 	int				time_sleep;
 	int				nb_eat;
 	struct timeval	tv;
-	sem_t			*writing;
+	pthread_mutex_t	**mutex;
+	pthread_mutex_t	*writing;
 	t_shared		alive;
 	t_shared		finished;
-	t_shared		forks;
 }	t_philo;
 
 typedef struct s_thread
@@ -49,7 +49,7 @@ typedef struct s_thread
 }	t_thread;
 
 //init.c
-pid_t		*init(int ac, char **av, t_philo *data, t_thread ***t_data);
+pthread_t	*init(int ac, char **av, t_philo *data, t_thread ***t_data);
 
 //moves.c
 void		print_move(t_thread thread, char *str, int num);
@@ -62,8 +62,8 @@ int			ft_atoi(const char *str);
 void		*ft_calloc(size_t nmemb, size_t size);
 
 //free.c
-int			end_process(t_philo *data, t_thread **thd, int *tid, int ret);
-void		free_semaphore(t_philo data);
+int			end_process(t_philo *data, t_thread **thd, pthread_t *tid, int ret);
+void		free_mutex(t_philo data);
 void		free_t_data(t_thread **t_data);
 
 //threads.c

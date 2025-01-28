@@ -12,17 +12,17 @@
 
 CC = cc
 CFLAGS = -Wall -Wextra -Werror -I $(INCDIR)
-NAME = philo_bonus
+NAME = philo
 SRCDIR = src
 INCDIR = include
-HEADERS = $(INCDIR)/philo_bonus.h
+HEADERS = $(INCDIR)/philo.h
 
-SRC =	philo_bonus.c		\
-		init_bonus.c		\
-		threads_bonus.c	\
-		moves_bonus.c		\
-		utils_bonus.c		\
-		free_bonus.c
+SRC =	philo.c		\
+		init.c		\
+		threads.c	\
+		moves.c		\
+		utils.c		\
+		free.c
 
 OBJS = $(addprefix $(SRCDIR)/, $(SRC:.c=.o))
 
