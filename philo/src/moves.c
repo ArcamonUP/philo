@@ -6,7 +6,7 @@
 /*   By: kbaridon <kbaridon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 14:07:22 by kbaridon          #+#    #+#             */
-/*   Updated: 2025/01/28 12:28:46 by kbaridon         ###   ########.fr       */
+/*   Updated: 2025/01/29 14:13:04 by kbaridon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,17 +27,31 @@ void	print_move(t_thread thread, char *str, int num)
 		printf("%lld %d %s\n", time / 1000, thread.num, str);
 }
 
+int	is_alone(t_thread th, struct timeval tv)
+{
+	if (th.data->num_total != 1)
+		return (EXIT_SUCCESS);
+	pthread_mutex_lock(th.data->mutex[0]);
+	pthread_mutex_lock(th.data->writing);
+	print_move(th, "has taken a fork", 1);
+	while (is_out_of_time(th, tv) != -1)
+		usleep(100);
+	pthread_mutex_unlock(th.data->writing);
+	pthread_mutex_unlock(th.data->mutex[0]);
+	return (EXIT_FAILURE);
+}
+
 // Handles taking a fork based on philo's position and fork availability
 int	philo_took_fork(t_thread th, struct timeval tv)
 {
 	int	fork1;
 	int	fork2;
 
+	if (is_alone(th, tv))
+		return (EXIT_FAILURE);
 	fork1 = th.num - 1;
 	if (th.num % 2 == 0 || th.num == th.data->num_total)
 		fork1--;
-	if (th.data->num_total == 1)
-		fork1 = 0;
 	fork2 = th.num - 2;
 	if (fork2 < 0)
 		fork2 = th.data->num_total - 1;
